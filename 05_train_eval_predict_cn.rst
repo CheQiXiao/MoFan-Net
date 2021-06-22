@@ -3,7 +3,8 @@
 训练与预测
 =====================
 
-在完成数据预处理，数据加载与模型的组建后，你就可以进行模型的训练与预测了。飞桨框架提供了两种训练与预测的方法，一种是用\ ``paddle.Model``\ 对模型进行封装，通过高层API如\ ``Model.fit()、Model.evaluate()、Model.predict()``\ 等完成模型的训练与预测；另一种就是基于基础API常规的训练方式。
+在完成数据预处理，数据加载与模型的组建后，你就可以进行模型的训练与预测了。飞桨主框架提供了两种训练与预测的方法，一种是用\ ``paddle.Model``\ 对模型进行封装，通过高层API如\ ``Model.fit()、Model.evaluate()、Model.predict()``\ 等完成模型的训练与预测；另一种就是基于基础API常规的训练方式。
+其中预测方法除以上两种外，还可采用原生推理库paddle inference 进行预测，该方法支持TeansorRT加速，支持第三方框架模型，支持量化、裁剪后的模型，适合于工业部署或对推理性能、通用性有要求的用户。
 
 .. note::
 
@@ -250,3 +251,11 @@ numpy_ndarray_n是对应原始数据经过模型计算后得到的预测数据�
 .. parsed-literal::
 
     predict finished
+ 
+四、通过paddle inference实现预测
+-----------------------------------------
+
+适合于工业部署或对推理性能、通用性有要求的用户，与model.predict()以及基础API的预测相比，可使用MKLDNN、CUDNN、TensorRT进行预测加速，同时支持用 X2Paddle 工具从第三方框架（TensorFlow、Pytorh 、 Caffe 等）产出的模型，可联动PaddleSlim，支持加载量化、裁剪和蒸馏后的模型部署。针对不同平台不同的应用场景进行了深度的适配优化，保证模型在服务器端即训即用，快速部署。
+
+详细教程可参照[paddle inference文档](https://paddle-inference.readthedocs.io/en/latest/quick_start/python_demo.html)
+
