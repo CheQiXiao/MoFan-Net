@@ -257,5 +257,5 @@ numpy_ndarray_n是对应原始数据经过模型计算后得到的预测数据�
 
 适合于工业部署或对推理性能、通用性有要求的用户，与model.predict()以及基础API的预测相比，可使用MKLDNN、CUDNN、TensorRT进行预测加速，同时支持用 X2Paddle 工具从第三方框架（TensorFlow、Pytorh 、 Caffe 等）产出的模型，可联动PaddleSlim，支持加载量化、裁剪和蒸馏后的模型部署。针对不同平台不同的应用场景进行了深度的适配优化，保证模型在服务器端即训即用，快速部署。
 
-详细教程可参照paddle inference文档:https://paddle-inference.readthedocs.io/en/latest/quick_start/python_demo.html
+详细教程可参照paddle inference文档：https://paddle-inference.readthedocs.io/en/latest/quick_start/python_demo.html
 
