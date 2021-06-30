@@ -290,7 +290,9 @@ paddle inference 适合于工业部署或对推理性能、通用性有要求的
 4.1 准备预测部署模型
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 要使用paddle inference预测需得到paddle预测格式的模型，所以你需要在训练过程中通过 paddle.jit.save(layer=mnist,path=path) 来保存模型，注意在训练时在forward函数前加@paddle.jit.to_static装饰器，将函数内的动态图API转化为静态图API。你也可以直接点击此链接下载训练好的模型。
+
 .. code:: ipython3
+
     #模型目录如下：
                 mnist/
             ├── inference.pdmodel
@@ -299,7 +301,9 @@ paddle inference 适合于工业部署或对推理性能、通用性有要求的
 4.2 准备预测部署程序
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 将以下代码保存为python_demo.py文件：
+
 .. code:: ipython3
+
     import argparse
     import numpy as np
     from skimage import transform,data
@@ -321,14 +325,10 @@ paddle inference 适合于工业部署或对推理性能、通用性有要求的
         input_names = predictor.get_input_names()
         input_handle = predictor.get_input_handle(input_names[0])
 
-        # 设置输入
+        # 设置输入，自定义一张输入照片
         im=Image.open('./img3.png').convert('L')
         im=np.array(im).reshape(1,1,28,28).astype(np.float32)
 
-        # fake_input = np.random.randn(args.batch_size, 1, 28, 28).astype("float32")
-        # print("input shape is {}".format(fake_input.shape))
-        # print("input type is {}".format(type(fake_input)))
-        # input_handle.reshape([args.batch_size, 1, 28, 28])
         print("im shape is {}".format(im.shape))
         print("im type is {}".format(type(im)))
         input_handle.copy_from_cpu(im)
@@ -353,10 +353,23 @@ paddle inference 适合于工业部署或对推理性能、通用性有要求的
 
     if __name__ == "__main__":
         main()
+        
 
 4.3 执行预测程序
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code:: ipython3
+
     python python_demo.py --model_file ./test_model.pdmodel --params_file ./test_model.pdiparams
+    
+.. parsed-literal::
+    
+    #输出如下（此处需要改动）
+    
+    [[-1347.5923  -1156.918    -774.73865  3387.0623  -1553.3696    107.96879
+      -2631.2185   -701.50323 -1094.3896    206.71666]]
+    Output data size is 10
+    Output data shape is (1, 10)
+    
 详细教程可参照paddle inference文档：https://paddle-inference.readthedocs.io/en/latest/quick_start/python_demo.html
 
