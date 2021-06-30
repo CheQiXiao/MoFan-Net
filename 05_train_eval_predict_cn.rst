@@ -30,7 +30,7 @@
 二、通过\ ``paddle.Model``\ 训练与预测
 ------------------------------------
 
-在这里你可以采用Sequential组网或者SubClass 组网的方式来创建一个mnist网络模型，你可以使用\ ``paddle.Model``\ 完成模型的封装，将网络结构组合成一个可快速使用高层API进行训练和预测的对象。代码如下：
+在这里你可以采用Sequential组网或者SubClass 组网的方式来创建一个mnist网络模型，你可使用\ ``paddle.Model``\ 完成模型的封装，将网络结构组合成一个可快速使用高层API进行训练和预测的对象。代码如下：
 
 .. code:: ipython3
 
@@ -287,8 +287,76 @@ numpy_ndarray_n是对应原始数据经过模型计算后得到的预测数据�
 
 paddle inference 适合于工业部署或对推理性能、通用性有要求的用户，与model.predict()以及基础API的预测相比，可使用MKLDNN、CUDNN、TensorRT进行预测加速，同时支持用 X2Paddle 工具从第三方框架（TensorFlow、Pytorh 、 Caffe 等）产出的模型，可联动PaddleSlim，支持加载量化、裁剪和蒸馏后的模型部署。针对不同平台不同的应用场景进行了深度的适配优化，保证模型在服务器端即训即用，快速部署。在这里，我们只简单的展示如何用paddle inference实现该模型的预测。
 
-4.1 拆解\ ``Model.predict()``\ -- 用基础API测试模型
+4.1 准备预测部署模型
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+要使用paddle inference预测需得到paddle预测格式的模型，所以你需要在训练过程中通过 paddle.jit.save(layer=mnist,path=path) 来保存模型，注意在训练时在forward函数前加@paddle.jit.to_static装饰器，将函数内的动态图API转化为静态图API。你也可以直接点击此链接下载训练好的模型。
+.. code:: ipython3
+    #模型目录如下：
+                mnist/
+            ├── inference.pdmodel
+            ├── inference.pdiparams.info
+            └── inference.pdiparams
+4.2 准备预测部署程序
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+将以下代码保存为python_demo.py文件：
+.. code:: ipython3
+    import argparse
+    import numpy as np
+    from skimage import transform,data
 
+    # 引用 paddle inference 预测库
+    import paddle.inference as paddle_infer
+    from PIL import Image
+
+    def main():
+        args = parse_args()
+
+        # 创建 config
+        config = paddle_infer.Config(args.model_file, args.params_file)
+
+        # 根据 config 创建 predictor
+        predictor = paddle_infer.create_predictor(config)
+
+        # 获取输入的名称
+        input_names = predictor.get_input_names()
+        input_handle = predictor.get_input_handle(input_names[0])
+
+        # 设置输入
+        im=Image.open('./img3.png').convert('L')
+        im=np.array(im).reshape(1,1,28,28).astype(np.float32)
+
+        # fake_input = np.random.randn(args.batch_size, 1, 28, 28).astype("float32")
+        # print("input shape is {}".format(fake_input.shape))
+        # print("input type is {}".format(type(fake_input)))
+        # input_handle.reshape([args.batch_size, 1, 28, 28])
+        print("im shape is {}".format(im.shape))
+        print("im type is {}".format(type(im)))
+        input_handle.copy_from_cpu(im)
+
+        # 运行predictor
+        predictor.run()
+
+        # 获取输出
+        output_names = predictor.get_output_names()
+        output_handle = predictor.get_output_handle(output_names[0])
+        output_data = output_handle.copy_to_cpu() # numpy.ndarray类型
+        print(output_data)
+        print("Output data size is {}".format(output_data.size))
+        print("Output data shape is {}".format(output_data.shape))
+
+    def parse_args():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--model_file", type=str, help="model filename")
+        parser.add_argument("--params_file", type=str, help="parameter filename")
+        parser.add_argument("--batch_size", type=int, default=1, help="batch size")
+        return parser.parse_args()
+
+    if __name__ == "__main__":
+        main()
+
+4.3 执行预测程序
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code:: ipython3
+    python python_demo.py --model_file ./test_model.pdmodel --params_file ./test_model.pdiparams
 详细教程可参照paddle inference文档：https://paddle-inference.readthedocs.io/en/latest/quick_start/python_demo.html
 
